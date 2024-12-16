@@ -27,7 +27,7 @@ function useCount() {
 function CountDisplay() {
   
   const [count] = useCount();
-  return <div>{`The current count is ${count}`}</div>;
+  return <h1>{count}</h1>;
 }
 
 function Counter() {

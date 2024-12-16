@@ -1,72 +1,4 @@
-
-
-
-import * as React from 'react'
-
-
-function MessagesDisplay({messages}) {
-  const containerRef = React.useRef()
-  React.useLayoutEffect(() => {
-    scrollToBottom()
-  })
-
-  
-  
-  
-  
-  function scrollToBottom() {
-    containerRef.current.scrollTop = containerRef.current.scrollHeight
-  }
-
-  
-  
-
-  return (
-    <div ref={containerRef} role="log">
-      {messages.map((message, index, array) => (
-        <div key={message.id}>
-          <strong>{message.author}</strong>: <span>{message.content}</span>
-          {array.length - 1 === index ? null : <hr />}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function App() {
-  const messageDisplayRef = React.useRef()
-  const [messages, setMessages] = React.useState(allMessages.slice(0, 8))
-  const addMessage = () =>
-    messages.length < allMessages.length
-      ? setMessages(allMessages.slice(0, messages.length + 1))
-      : null
-  const removeMessage = () =>
-    messages.length > 0
-      ? setMessages(allMessages.slice(0, messages.length - 1))
-      : null
-
-  const scrollToTop = () => messageDisplayRef.current.scrollToTop()
-  const scrollToBottom = () => messageDisplayRef.current.scrollToBottom()
-
-  return (
-    <div className="messaging-app">
-      <div style={{display: 'flex', justifyContent: 'space-between'}}>
-        <button onClick={addMessage}>add message</button>
-        <button onClick={removeMessage}>remove message</button>
-      </div>
-      <hr />
-      <div>
-        <button onClick={scrollToTop}>scroll to top</button>
-      </div>
-      <MessagesDisplay ref={messageDisplayRef} messages={messages} />
-      <div>
-        <button onClick={scrollToBottom}>scroll to bottom</button>
-      </div>
-    </div>
-  )
-}
-
-export default App
+import * as React from 'react';
 
 const allMessages = [
   `Leia: Aren't you a little short to be a stormtrooper?`,
@@ -100,4 +32,71 @@ const allMessages = [
   `Leia: Don't just stand there. Try to brace it with something.`,
   `Luke: Wait a minute!`,
   `Luke: Threepio! Come in Threepio! Threepio! Where could he be?`,
-].map((m, i) => ({id: i, author: m.split(': ')[0], content: m.split(': ')[1]}))
+].map((m, i) => ({ id: i, author: m.split(': ')[0], content: m.split(': ')[1] }));
+
+const MessagesDisplay = React.forwardRef(({ messages }, ref) => {
+  const containerRef = React.useRef();
+
+  React.useLayoutEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+  };
+
+  React.useImperativeHandle(ref, () => ({
+    scrollToBottom,
+    scrollToTop: () => {
+      containerRef.current.scrollTop = 0;
+    },
+  }));
+
+  return (
+    <div ref={containerRef} role="log" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+      {messages.map((message, index, array) => (
+        <div key={message.id}>
+          <strong>{message.author}</strong>: <span>{message.content}</span>
+          {array.length - 1 === index ? null : <hr />}
+        </div>
+      ))}
+    </div>
+  );
+});
+
+function App() {
+  const messageDisplayRef = React.useRef();
+  const [messages, setMessages] = React.useState(allMessages.slice(0, 8));
+
+  const addMessage = () =>
+    messages.length < allMessages.length
+      ? setMessages(allMessages.slice(0, messages.length + 1))
+      : null;
+
+  const removeMessage = () =>
+    messages.length > 0
+      ? setMessages(allMessages.slice(0, messages.length - 1))
+      : null;
+
+  const scrollToTop = () => messageDisplayRef.current.scrollToTop();
+  const scrollToBottom = () => messageDisplayRef.current.scrollToBottom();
+
+  return (
+    <div className="messaging-app">
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button onClick={addMessage}>add message</button>
+        <button onClick={removeMessage}>remove message</button>
+      </div>
+      <hr />
+      <div>
+        <button onClick={scrollToTop}>scroll to top</button>
+      </div>
+      <MessagesDisplay ref={messageDisplayRef} messages={messages} />
+      <div>
+        <button onClick={scrollToBottom}>scroll to bottom</button>
+      </div>
+    </div>
+  );
+}
+
+export default App;

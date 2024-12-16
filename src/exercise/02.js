@@ -1,5 +1,8 @@
 import * as React from 'react'
 import One from "./02.extra-1"
+import Two from "./02.extra-2"
+import Three from "./02.extra-3"
+
 import {
   fetchPokemon,
   PokemonForm,
@@ -111,6 +114,7 @@ function App2() {
       <hr />
       {mountApp ? <App /> : null}
       <One/>
+      <Two/>
     </div>
   )
 }

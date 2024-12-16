@@ -5,7 +5,8 @@ function MessagesDisplay({messages}) {
   
   
   React.useLayoutEffect(() => {
-    containerRef.current.scrollTop = containerRef.current.scrollHeight
+       containerRef.current.scrollTop = containerRef.current.scrollHeight
+    // document.documentElement.scrollTop = document.documentElement.scrollHeight
   }, [messages]) 
 
   return (

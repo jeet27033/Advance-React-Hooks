@@ -1,5 +1,6 @@
 import * as React from 'react';
 import One from "./03.extra-1"
+import Two from "./03.extra-2"
 
 const CountContext = React.createContext();
 
@@ -17,7 +18,7 @@ function CountProvider({ children }) {
 function CountDisplay() {
   
   const [count] = React.useContext(CountContext);
-  return <div>{`The current count is ${count}`}</div>;
+  return <h1>{count}</h1>;
 }
 
 function Counter() {
@@ -35,6 +36,7 @@ function App() {
       <Counter />
     </CountProvider>
     <One/>
+    <Two/>
     </>
   );
 }

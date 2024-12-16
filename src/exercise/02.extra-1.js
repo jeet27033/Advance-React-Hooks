@@ -7,52 +7,60 @@ import {
   PokemonErrorBoundary,
 } from '../pokemon'
 
-function pokemonInfoReducer(state, action) {
+function asyncReducer(state, action) {
   switch (action.type) {
-    case 'pending':
-      return { status: 'pending', data: null, error: null }
-    case 'resolved':
-      return { status: 'resolved', data: action.data, error: null }
-    case 'rejected':
-      return { status: 'rejected', data: null, error: action.error }
-    default:
-      throw new Error(`Unhandled action type: ${action.type}`)
+    case 'pending': {
+      return {status: 'pending', data: null, error: null}
+    }
+    case 'resolved': {
+      return {status: 'resolved', data: action.data, error: null}
+    }
+    case 'rejected': {
+      return {status: 'rejected', data: null, error: action.error}
+    }
+    default: {
+      throw new Error("not found")
+    }
   }
 }
 
-function useAsync(asyncCallback, initialState, dependencies) {
-  const [state, dispatch] = React.useReducer(pokemonInfoReducer, initialState)
-
+function useAsync(asyncCallback, initialState) {
+  const [state, dispatch] = React.useReducer(asyncReducer, {
+    status: 'idle',
+    data: null,
+    error: null,
+    ...initialState,
+  })
   React.useEffect(() => {
     const promise = asyncCallback()
     if (!promise) {
       return
     }
-    dispatch({ type: 'pending' })
+    dispatch({type: 'pending'})
     promise.then(
       data => {
-        dispatch({ type: 'resolved', data })
+        dispatch({type: 'resolved', data})
       },
       error => {
-        dispatch({ type: 'rejected', error })
+        dispatch({type: 'rejected', error})
       },
     )
-  }, dependencies)
-
+  }, [asyncCallback])
   return state
 }
 
-function PokemonInfo({ pokemonName, memoizeDependencies }) {
-  const { data, status, error } = useAsync(
-    React.useCallback(() => {
-      if (!pokemonName) {
-        return
-      }
-      return fetchPokemon(pokemonName)
-    }, memoizeDependencies), 
-    { status: pokemonName ? 'pending' : 'idle', data: null, error: null },
-    [pokemonName, ...memoizeDependencies] 
-  )
+function PokemonInfo({pokemonName}) {
+  const asyncCallback = React.useCallback(() => {
+    if (!pokemonName) {
+      return
+    }
+    return fetchPokemon(pokemonName)
+  }, [pokemonName])
+
+  const state = useAsync(asyncCallback, {
+    status: pokemonName ? 'pending' : 'idle',
+  })
+  const {data: pokemon, status, error} = state
 
   switch (status) {
     case 'idle':
@@ -62,15 +70,14 @@ function PokemonInfo({ pokemonName, memoizeDependencies }) {
     case 'rejected':
       throw error
     case 'resolved':
-      return <PokemonDataView pokemon={data} />
+      return <PokemonDataView pokemon={pokemon} />
     default:
-      throw new Error('This should be impossible')
+      throw new Error('not found')
   }
 }
 
 function App() {
   const [pokemonName, setPokemonName] = React.useState('')
-  const [memoizeDependencies, setMemoizeDependencies] = React.useState([])
 
   function handleSubmit(newPokemonName) {
     setPokemonName(newPokemonName)
@@ -84,18 +91,9 @@ function App() {
     <div className="pokemon-info-app">
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
-      <div>
-        <label>
-          Custom Memoization Dependencies (comma-separated):
-          <input
-            type="text"
-            onChange={e => setMemoizeDependencies(e.target.value.split(',').map(dep => dep.trim()))}
-          />
-        </label>
-      </div>
       <div className="pokemon-info">
         <PokemonErrorBoundary onReset={handleReset} resetKeys={[pokemonName]}>
-          <PokemonInfo pokemonName={pokemonName} memoizeDependencies={memoizeDependencies} />
+          <PokemonInfo pokemonName={pokemonName} />
         </PokemonErrorBoundary>
       </div>
     </div>
